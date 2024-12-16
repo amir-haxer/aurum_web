@@ -3,140 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Remote Access Tool</title>
-    <style>
-        body {
-            background-color: black;
-            color: #00ff00;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        h1 {
-            text-align: center;
-            text-shadow: 0 0 10px #00ff00;
-        }
-        .container {
-            width: 90%;
-            margin: auto;
-        }
-        .section {
-            border: 1px solid #00ff00;
-            padding: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 0 10px #00ff00;
-        }
-        .section-title {
-            background-color: #002200;
-            padding: 5px;
-            text-align: center;
-            border-bottom: 1px solid #00ff00;
-            font-weight: bold;
-        }
-        .button {
-            background-color: #003300;
-            color: #00ff00;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        .button:hover {
-            background-color: #004400;
-        }
-        #log {
-            background-color: #001100;
-            color: #00ff00;
-            padding: 10px;
-            height: 200px;
-            overflow-y: scroll;
-            border: 1px solid #00ff00;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        table th, table td {
-            border: 1px solid #00ff00;
-            padding: 5px;
-            text-align: center;
-        }
-        table th {
-            background-color: #002200;
-        }
-    </style>
+    <title>Command Control Panel</title>
 </head>
 <body>
-    <h1>Remote Access Tool</h1>
-    <div class="container">
-        <!-- Live Screen Share Section -->
-        <div class="section">
-            <div class="section-title">Aurum Web Interface Control Panel</div>
-            <button class="button" onclick="startScreenShare()">Start Sharing</button>
-            <button class="button" onclick="stopScreenShare()">Stop Sharing</button>
-        </div>
-
-        <!-- Command Execution Section -->
-        <div class="section">
-            <div class="section-title">Command Execution</div>
-            <textarea id="commandInput" rows="4" style="width: 100%;" placeholder="Enter command here..."></textarea>
-            <button class="button" onclick="executeCommand()">Execute Command</button>
-        </div>
-
-        <!-- Connected Clients Section -->
-        <div class="section">
-            <div class="section-title">Connected Clients</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Client IP</th>
-                        <th>Version</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="clientsTable">
-                    <tr>
-                        <td>192.168.1.101</td>
-                        <td>v1.2</td>
-                        <td>Active</td>
-                    </tr>
-                    <tr>
-                        <td>192.168.1.102</td>
-                        <td>v1.3</td>
-                        <td>Inactive</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Activity Logs Section -->
-        <div class="section">
-            <div class="section-title">Activity Logs</div>
-            <div id="log">Logs will appear here...</div>
-        </div>
-    </div>
-
+    <h1>Command Control Panel</h1>
+    <form id="commandForm">
+        <label for="command">Command:</label>
+        <input type="text" id="command" placeholder="Enter command (e.g., msgbox-content)" required>
+        <br><br>
+        <label for="argument">Argument:</label>
+        <input type="text" id="argument" placeholder="Enter argument" required>
+        <br><br>
+        <button type="submit">Submit</button>
+    </form>
+    <p id="status"></p>
     <script>
-        function startScreenShare() {
-            logAction("Starting screen sharing...");
-            // Add logic to start screen sharing
-        }
+        document.getElementById("commandForm").onsubmit = async (e) => {
+            e.preventDefault();
+            const command = document.getElementById("command").value;
+            const argument = document.getElementById("argument").value;
+            const url = "https://api.github.com/repos/amir-haxer/aurum_web/contents/commands.json";
+            
+            const data = {
+                message: "Update command",
+                content: btoa(JSON.stringify({ command, argument })),
+                sha: "" // Use the latest SHA of the file.
+            };
 
-        function stopScreenShare() {
-            logAction("Stopping screen sharing...");
-            // Add logic to stop screen sharing
-        }
+            const response = await fetch(url, {
+                method: "PUT",
+                headers: {
+                    Authorization: Bearer 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,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
 
-        function executeCommand() {
-            const command = document.getElementById("commandInput").value;
-            logAction(`Executing command: ${command}`);
-            // Add logic to send command to the server
-        }
-
-        function logAction(message) {
-            const log = document.getElementById("log");
-            log.innerHTML += `<p>${message}</p>`;
-            log.scrollTop = log.scrollHeight;
-        }
+            if (response.ok) {
+                document.getElementById("status").textContent = "Command updated successfully!";
+            } else {
+                document.getElementById("status").textContent = "Failed to update command.";
+            }
+        };
     </script>
 </body>
 </html>
