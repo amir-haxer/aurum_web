@@ -6,7 +6,7 @@
     <title>Command Control Panel</title>
 </head>
 <body>
-    <h1>Command Control Panel</h1>
+    <h1>Command Control Panel.</h1>
     <form id="commandForm">
         <label for="command">Command:</label>
         <input type="text" id="command" placeholder="Enter command (e.g., msgbox-content)" required>
@@ -17,63 +17,32 @@
         <button type="submit">Submit</button>
     </form>
     <p id="status"></p>
-
     <script>
         document.getElementById("commandForm").onsubmit = async (e) => {
             e.preventDefault();
             const command = document.getElementById("command").value;
             const argument = document.getElementById("argument").value;
             const url = "https://api.github.com/repos/amir-haxer/aurum_web/contents/commands.json";
-            const token = "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";  // Replace with your token
+            
+            const data = {
+                message: "Update command",
+                content: btoa(JSON.stringify({ command, argument })),
+                sha: "" // Use the latest SHA of the file.
+            };
 
-            try {
-                // Step 1: Fetch the latest `sha` of the file
-                const getFileResponse = await fetch(url, {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+            const response = await fetch(url, {
+                method: "PUT",
+                headers: {
+                    Authorization: Bearer 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,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
 
-                let sha = "";
-                if (getFileResponse.ok) {
-                    const fileData = await getFileResponse.json();
-                    sha = fileData.sha; // Get the current `sha` of the file
-                }
-
-                // Step 2: Prepare the updated content
-                const newContent = {
-                    command,
-                    argument,
-                    processed: false // Reset processed to false for new commands
-                };
-
-                const data = {
-                    message: "Update command",
-                    content: btoa(JSON.stringify(newContent, null, 2)), // Base64 encode the content
-                    sha: sha || undefined // Include the sha if it exists
-                };
-
-                // Step 3: Update the file
-                const updateResponse = await fetch(url, {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                if (updateResponse.ok) {
-                    document.getElementById("status").textContent = "Command updated successfully!";
-                } else {
-                    const errorResponse = await updateResponse.json();
-                    console.error("Update Error:", errorResponse);
-                    document.getElementById("status").textContent = "Failed to update command.";
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                document.getElementById("status").textContent = "An error occurred.";
+            if (response.ok) {
+                document.getElementById("status").textContent = "Command updated successfully!";
+            } else {
+                document.getElementById("status").textContent = "Failed to update command.";
             }
         };
     </script>
